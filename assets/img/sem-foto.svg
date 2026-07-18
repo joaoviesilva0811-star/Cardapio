@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <rect width="400" height="300" fill="#FFF1E9"/>
+  <g transform="translate(200,150)" fill="none" stroke="#F0C4D4" stroke-width="6" stroke-linecap="round">
+    <path d="M-60,30 L-60,-10 Q-60,-30 -40,-30 L40,-30 Q60,-30 60,-10 L60,30 Z"/>
+    <path d="M-60,-10 Q-45,-25 -30,-10 Q-15,-25 0,-10 Q15,-25 30,-10 Q45,-25 60,-10"/>
+    <line x1="0" y1="-30" x2="0" y2="-48"/>
+    <circle cx="0" cy="-54" r="6" fill="#F0C4D4" stroke="none"/>
+  </g>
+  <text x="200" y="230" text-anchor="middle" font-family="Quicksand, sans-serif" font-size="15" fill="#B18E90">Foto em breve</text>
+</svg>

@@ -1,15 +1,13 @@
-<?php
-require_once __DIR__ . '/includes/functions.php';
-
-$urlBase = '';
-$categorias = buscarCategorias();
-$produtos = buscarProdutos(true); // só os disponíveis aparecem para o cliente
-?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <title>Delícias da Maria — Cardápio</title>
-  <?php include __DIR__ . '/includes/partials/head.php'; ?>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Cardápio online de bolos da Delícias da Maria. Escolha o sabor, cobertura e recheio, e peça diretamente pelo WhatsApp.">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/img/favicon.png">
 </head>
 <body>
 
@@ -21,10 +19,12 @@ $produtos = buscarProdutos(true); // só os disponíveis aparecem para o cliente
       <p>Escolha o seu, monte o sabor do jeitinho que gosta e peça direto pelo WhatsApp.</p>
       <div class="topo-acoes">
         <a href="#cardapio" class="btn btn-rosa">Ver cardápio</a>
-        <a href="https://wa.me/<?= h(WHATSAPP_NUMERO) ?>" class="btn btn-fantasma" target="_blank" rel="noopener">Falar no WhatsApp</a>
+        <a href="https://wa.me/5512982037844" class="btn btn-fantasma" target="_blank" rel="noopener">Falar no WhatsApp</a>
       </div>
     </div>
-    <?php include __DIR__ . '/includes/partials/divisor.php'; ?>
+    <svg class="divisor-glace" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0,0 C50,40 100,40 150,0 C200,40 250,40 300,0 C350,40 400,40 450,0 C500,40 550,40 600,0 C650,40 700,40 750,0 C800,40 850,40 900,0 C950,40 1000,40 1050,0 C1100,40 1150,40 1200,0 L1200,40 L0,40 Z"></path>
+    </svg>
   </header>
 
   <main>
@@ -36,90 +36,154 @@ $produtos = buscarProdutos(true); // só os disponíveis aparecem para o cliente
           <p>Todos os itens podem ser personalizados com o sabor, cobertura e recheio disponíveis.</p>
         </div>
 
-        <?php if (count($produtos) > 0): ?>
-          <div class="filtro-barra">
-            <button type="button" class="filtro-chip ativo" data-categoria="todas">Todos</button>
-            <?php foreach ($categorias as $categoria): ?>
-              <?php
-                // só mostra o filtro de seções que realmente têm produto disponível
-                $temProdutoNaCategoria = false;
-                foreach ($produtos as $p) {
-                    if ((int) $p['categoria_id'] === (int) $categoria['id']) { $temProdutoNaCategoria = true; break; }
-                }
-              ?>
-              <?php if ($temProdutoNaCategoria): ?>
-                <button type="button" class="filtro-chip" data-categoria="<?= (int) $categoria['id'] ?>">
-                  <?= h($categoria['emoji']) ?> <?= h($categoria['nome']) ?>
-                </button>
-              <?php endif; ?>
-            <?php endforeach; ?>
-          </div>
-
-          <div style="margin-bottom:30px; display:flex; justify-content:center;">
-            <input
-              type="search"
-              id="busca-produto"
-              placeholder="Buscar pelo nome..."
-              aria-label="Buscar item pelo nome"
-              style="max-width:320px; width:100%; padding:11px 18px; border-radius:999px; border:2px solid var(--rosa-pastel-2); font-family:var(--fonte-corpo); font-size:0.9rem;"
-            >
-          </div>
-        <?php endif; ?>
-
-        <div class="grade-bolos" id="grade-produtos">
-          <?php foreach ($produtos as $produto): ?>
-            <?php
-              $sabores = array_column($produto['atributos']['sabor'], 'nome');
-              $coberturas = array_column($produto['atributos']['cobertura'], 'nome');
-              $recheios = array_column($produto['atributos']['recheio'], 'nome');
-            ?>
-            <article
-              class="cartao-bolo"
-              data-nome="<?= h(mb_strtolower($produto['nome'])) ?>"
-              data-categoria="<?= (int) $produto['categoria_id'] ?>"
-            >
-              <div class="cartao-bolo-foto">
-                <img src="<?= h(urlImagemProduto($produto['imagem'])) ?>" alt="Foto de <?= h($produto['nome']) ?>" loading="lazy">
-              </div>
-              <div class="cartao-bolo-corpo">
-                <span class="tag" style="align-self:flex-start; background:var(--lilas-pastel); color:#6A5794;">
-                  <?= h($produto['categoria_emoji']) ?> <?= h($produto['categoria_nome']) ?>
-                </span>
-                <h3><?= h($produto['nome']) ?></h3>
-                <?php if (!empty($produto['descricao'])): ?>
-                  <p class="cartao-bolo-desc"><?= h($produto['descricao']) ?></p>
-                <?php endif; ?>
-
-                <div class="tag-lista">
-                  <?php foreach (array_slice($sabores, 0, 3) as $s): ?><span class="tag rosa"><?= h($s) ?></span><?php endforeach; ?>
-                  <?php foreach (array_slice($coberturas, 0, 2) as $c): ?><span class="tag"><?= h($c) ?></span><?php endforeach; ?>
-                  <?php foreach (array_slice($recheios, 0, 2) as $r): ?><span class="tag lilas"><?= h($r) ?></span><?php endforeach; ?>
-                </div>
-
-                <div class="cartao-bolo-rodape">
-                  <span class="preco"><?= h(formatarPreco((float) $produto['preco'])) ?></span>
-                  <button
-                    type="button"
-                    class="btn btn-rosa btn-pequeno botao-pedir"
-                    data-produto="<?= h($produto['nome']) ?>"
-                    data-preco="<?= h(formatarPreco((float) $produto['preco'])) ?>"
-                    data-sabores="<?= h(implode('|', $sabores)) ?>"
-                    data-coberturas="<?= h(implode('|', $coberturas)) ?>"
-                    data-recheios="<?= h(implode('|', $recheios)) ?>"
-                  >
-                    Pedir agora
-                  </button>
-                </div>
-              </div>
-            </article>
-          <?php endforeach; ?>
+        <div class="filtro-barra">
+          <button type="button" class="filtro-chip ativo" data-categoria="todas">Todos</button>
+          <button type="button" class="filtro-chip" data-categoria="1">🎂 Bolos</button>
+          <button type="button" class="filtro-chip" data-categoria="2">🍬 Doces</button>
+          <button type="button" class="filtro-chip" data-categoria="3">🥧 Tortas</button>
         </div>
 
-        <?php if (count($produtos) === 0): ?>
-          <div class="estado-vazio">
-            <p>O cardápio ainda está sendo preparado. Volte em breve! 🍰</p>
-          </div>
-        <?php endif; ?>
+        <div style="margin-bottom:30px; display:flex; justify-content:center;">
+          <input
+            type="search"
+            id="busca-produto"
+            placeholder="Buscar pelo nome..."
+            aria-label="Buscar item pelo nome"
+            style="max-width:320px; width:100%; padding:11px 18px; border-radius:999px; border:2px solid var(--rosa-pastel-2); font-family:var(--fonte-corpo); font-size:0.9rem;"
+          >
+        </div>
+
+        <div class="grade-bolos" id="grade-produtos">
+
+          <article class="cartao-bolo" data-nome="bolo de chocolate com morango" data-categoria="1">
+            <div class="cartao-bolo-foto">
+              <img src="assets/img/sem-foto.svg" alt="Foto de Bolo de Chocolate com Morango" loading="lazy">
+            </div>
+            <div class="cartao-bolo-corpo">
+              <span class="tag" style="align-self:flex-start; background:var(--lilas-pastel); color:#6A5794;">
+                🎂 Bolos
+              </span>
+              <h3>Bolo de Chocolate com Morango</h3>
+              <p class="cartao-bolo-desc">Massa fofinha de chocolate com recheio cremoso e morangos frescos.</p>
+              <div class="tag-lista">
+                <span class="tag rosa">Chocolate</span>
+                <span class="tag rosa">Baunilha</span>
+                <span class="tag">Ganache</span>
+                <span class="tag lilas">Morango</span>
+                <span class="tag lilas">Brigadeiro</span>
+              </div>
+              <div class="cartao-bolo-rodape">
+                <span class="preco">R$ 85,00</span>
+                <button
+                  type="button"
+                  class="btn btn-rosa btn-pequeno botao-pedir"
+                  data-produto="Bolo de Chocolate com Morango"
+                  data-preco="R$ 85,00"
+                  data-sabores="Chocolate|Baunilha"
+                  data-coberturas="Ganache"
+                  data-recheios="Morango|Brigadeiro"
+                >
+                  Pedir agora
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <article class="cartao-bolo" data-nome="bolo red velvet" data-categoria="1">
+            <div class="cartao-bolo-foto">
+              <img src="assets/img/sem-foto.svg" alt="Foto de Bolo Red Velvet" loading="lazy">
+            </div>
+            <div class="cartao-bolo-corpo">
+              <span class="tag" style="align-self:flex-start; background:var(--lilas-pastel); color:#6A5794;">
+                🎂 Bolos
+              </span>
+              <h3>Bolo Red Velvet</h3>
+              <p class="cartao-bolo-desc">Clássico americano com cobertura de cream cheese.</p>
+              <div class="tag-lista">
+                <span class="tag rosa">Red Velvet</span>
+                <span class="tag">Cream Cheese</span>
+              </div>
+              <div class="cartao-bolo-rodape">
+                <span class="preco">R$ 95,00</span>
+                <button
+                  type="button"
+                  class="btn btn-rosa btn-pequeno botao-pedir"
+                  data-produto="Bolo Red Velvet"
+                  data-preco="R$ 95,00"
+                  data-sabores="Red Velvet"
+                  data-coberturas="Cream Cheese"
+                  data-recheios=""
+                >
+                  Pedir agora
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <article class="cartao-bolo" data-nome="brigadeiro gourmet" data-categoria="2">
+            <div class="cartao-bolo-foto">
+              <img src="assets/img/sem-foto.svg" alt="Foto de Brigadeiro Gourmet" loading="lazy">
+            </div>
+            <div class="cartao-bolo-corpo">
+              <span class="tag" style="align-self:flex-start; background:var(--lilas-pastel); color:#6A5794;">
+                🍬 Doces
+              </span>
+              <h3>Brigadeiro Gourmet</h3>
+              <p class="cartao-bolo-desc">Caixa com 12 unidades, sabores variados.</p>
+              <div class="tag-lista">
+                <span class="tag rosa">Chocolate 70%</span>
+                <span class="tag rosa">Ninho</span>
+                <span class="tag">Granulado Belga</span>
+              </div>
+              <div class="cartao-bolo-rodape">
+                <span class="preco">R$ 32,00</span>
+                <button
+                  type="button"
+                  class="btn btn-rosa btn-pequeno botao-pedir"
+                  data-produto="Brigadeiro Gourmet"
+                  data-preco="R$ 32,00"
+                  data-sabores="Chocolate 70%|Ninho"
+                  data-coberturas="Granulado Belga"
+                  data-recheios=""
+                >
+                  Pedir agora
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <article class="cartao-bolo" data-nome="torta de limão" data-categoria="3">
+            <div class="cartao-bolo-foto">
+              <img src="assets/img/sem-foto.svg" alt="Foto de Torta de Limão" loading="lazy">
+            </div>
+            <div class="cartao-bolo-corpo">
+              <span class="tag" style="align-self:flex-start; background:var(--lilas-pastel); color:#6A5794;">
+                🥧 Tortas
+              </span>
+              <h3>Torta de Limão</h3>
+              <p class="cartao-bolo-desc">Base crocante, creme de limão e merengue maçaricado.</p>
+              <div class="tag-lista">
+                <span class="tag rosa">Limão</span>
+                <span class="tag">Merengue</span>
+              </div>
+              <div class="cartao-bolo-rodape">
+                <span class="preco">R$ 70,00</span>
+                <button
+                  type="button"
+                  class="btn btn-rosa btn-pequeno botao-pedir"
+                  data-produto="Torta de Limão"
+                  data-preco="R$ 70,00"
+                  data-sabores="Limão"
+                  data-coberturas="Merengue"
+                  data-recheios=""
+                >
+                  Pedir agora
+                </button>
+              </div>
+            </div>
+          </article>
+
+        </div>
 
         <p id="sem-resultado" class="estado-vazio" style="display:none;">Nenhum item encontrado.</p>
       </div>
@@ -157,13 +221,12 @@ $produtos = buscarProdutos(true); // só os disponíveis aparecem para o cliente
   <footer class="rodape">
     <div class="container">
       <p>Delícias da Maria — feito com amor 💗</p>
-      <p><a href="https://wa.me/<?= h(WHATSAPP_NUMERO) ?>" target="_blank" rel="noopener">Chamar no WhatsApp</a></p>
-      <a href="login.php" class="rodape-admin-link">Área administrativa</a>
+      <p><a href="https://wa.me/5512982037844" target="_blank" rel="noopener">Chamar no WhatsApp</a></p>
     </div>
   </footer>
 
   <script>
-    const WHATSAPP_NUMERO = '<?= h(WHATSAPP_NUMERO) ?>';
+    const WHATSAPP_NUMERO = '5512982037844';
   </script>
   <script src="assets/js/main.js"></script>
 </body>

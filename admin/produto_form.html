@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <title id="titulo-pagina">Novo produto — Painel Delícias da Maria</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/img/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="../assets/img/favicon.png">
+</head>
+<body>
+<div class="painel">
+  <div id="painel-lateral-placeholder"></div>
+
+  <main class="painel-conteudo">
+    <div class="painel-cabecalho">
+      <div>
+        <h1 id="titulo-h1">Novo produto</h1>
+        <p>Preencha as informações que os clientes verão no cardápio.</p>
+      </div>
+      <a href="produtos.html" class="btn btn-fantasma">← Voltar</a>
+    </div>
+
+    <div id="alerta-erro" class="alerta alerta-erro" style="display:none;"></div>
+    <div id="alerta-sem-categoria" class="alerta alerta-erro" style="display:none;">
+      Você ainda não criou nenhuma seção do cardápio. Crie a primeira em
+      <a href="categorias.html" style="text-decoration:underline; font-weight:700;">Seções</a> antes de cadastrar produtos.
+    </div>
+
+    <form id="form-produto" class="painel-bloco" style="display:none;">
+      <div class="linha-form">
+        <div class="campo" style="flex:2;">
+          <label for="nome">Nome do produto</label>
+          <input type="text" id="nome" required placeholder="Ex: Bolo de Chocolate com Morango">
+        </div>
+        <div class="campo">
+          <label for="preco">Preço (R$)</label>
+          <input type="text" id="preco" required placeholder="Ex: 75.00">
+        </div>
+      </div>
+
+      <div class="campo">
+        <label for="categoria_id">Seção do cardápio</label>
+        <select id="categoria_id" required></select>
+        <p class="campo-ajuda">Não achou a seção certa? <a href="categorias.html" style="color:var(--rosa-forte-escuro); font-weight:700;">Crie uma nova seção</a>.</p>
+      </div>
+
+      <div class="campo">
+        <label for="descricao">Descrição</label>
+        <textarea id="descricao" rows="3" placeholder="Conte um pouco sobre esse produto..."></textarea>
+      </div>
+
+      <div class="campo">
+        <label>Foto do produto</label>
+        <div class="upload-preview" id="preview-container">
+          <span id="preview-texto">Nenhuma foto ainda</span>
+          <img src="" alt="" id="preview-img" style="display:none;">
+        </div>
+        <input type="file" id="imagem" accept="image/jpeg,image/png,image/webp">
+        <p class="campo-ajuda">JPG, PNG ou WEBP. A imagem fica guardada no navegador (não é enviada a nenhum servidor).</p>
+        <label id="label-remover-imagem" style="display:none; align-items:center; gap:8px; margin-top:10px; font-weight:600; font-size:0.85rem;">
+          <input type="checkbox" id="remover_imagem" style="width:auto;">
+          Remover foto atual
+        </label>
+      </div>
+
+      <div class="campo" id="campo-sabores" style="display:none;">
+        <label>Sabores disponíveis para este produto (opcional)</label>
+        <div class="checkbox-grade" id="grade-sabores"></div>
+      </div>
+
+      <div class="campo" id="campo-coberturas" style="display:none;">
+        <label>Coberturas disponíveis para este produto (opcional)</label>
+        <div class="checkbox-grade" id="grade-coberturas"></div>
+      </div>
+
+      <div class="campo" id="campo-recheios" style="display:none;">
+        <label>Recheios disponíveis para este produto (opcional)</label>
+        <div class="checkbox-grade" id="grade-recheios"></div>
+      </div>
+
+      <div class="campo">
+        <label style="display:flex; align-items:center; gap:8px;">
+          <input type="checkbox" id="disponivel" style="width:auto;" checked>
+          Mostrar este produto no cardápio público
+        </label>
+      </div>
+
+      <div class="form-acoes">
+        <button type="submit" class="btn btn-rosa" id="botao-salvar">Cadastrar produto</button>
+        <a href="produtos.html" class="btn btn-fantasma">Cancelar</a>
+      </div>
+    </form>
+  </main>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+<script src="../assets/js/firebase-config.js"></script>
+<script src="../assets/js/store.js"></script>
+<script src="../assets/js/admin-common.js"></script>
+<script>
+(async () => {
+  await montarSidebar('produtos');
+
+  const categorias = await DM.buscarCategorias();
+  if (categorias.length === 0) {
+    document.getElementById('alerta-sem-categoria').style.display = 'block';
+  } else {
+    document.getElementById('form-produto').style.display = 'block';
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const produtoId = params.get('id') || null; // ID do Firestore é string
+  const editando = produtoId !== null;
+  const produto = editando ? await DM.buscarProdutoPorId(produtoId) : null;
+
+  if (editando && !produto) {
+    window.location.href = 'produtos.html';
+    return;
+  }
+
+  if (editando) {
+    document.getElementById('titulo-pagina').textContent = 'Editar produto — Painel Delícias da Maria';
+    document.getElementById('titulo-h1').textContent = 'Editar produto';
+    document.getElementById('botao-salvar').textContent = 'Salvar alterações';
+  }
+
+  // popular select de categorias
+  const select = document.getElementById('categoria_id');
+  select.innerHTML = categorias.map((c) =>
+    `<option value="${c.id}">${DM.h(c.emoji)} ${DM.h(c.nome)}</option>`
+  ).join('');
+
+  let imagemAtual = null; // base64 da foto (nova ou existente)
+
+  if (editando && produto) {
+    document.getElementById('nome').value = produto.nome;
+    document.getElementById('preco').value = produto.preco;
+    document.getElementById('descricao').value = produto.descricao || '';
+    document.getElementById('disponivel').checked = !!produto.disponivel;
+    select.value = produto.categoria_id;
+
+    if (produto.imagem) {
+      imagemAtual = produto.imagem;
+      document.getElementById('preview-img').src = produto.imagem;
+      document.getElementById('preview-img').style.display = 'block';
+      document.getElementById('preview-texto').style.display = 'none';
+      document.getElementById('label-remover-imagem').style.display = 'flex';
+    }
+  }
+
+  document.getElementById('imagem').addEventListener('change', function (evento) {
+    const arquivo = evento.target.files[0];
+    if (!arquivo) return;
+    const leitor = new FileReader();
+    leitor.onload = function (e) {
+      imagemAtual = e.target.result;
+      document.getElementById('preview-img').src = imagemAtual;
+      document.getElementById('preview-img').style.display = 'block';
+      document.getElementById('preview-texto').style.display = 'none';
+    };
+    leitor.readAsDataURL(arquivo);
+  });
+
+  // grades de sabor / cobertura / recheio
+  async function montarGrade(tipo, campoId, gradeId, selecionados) {
+    const itens = await DM.buscarAtributos(tipo);
+    if (itens.length === 0) return;
+    document.getElementById(campoId).style.display = 'block';
+    document.getElementById(gradeId).innerHTML = itens.map((item) => `
+      <div class="checkbox-item">
+        <input type="checkbox" id="${tipo}-${item.id}" value="${item.id}" class="chk-${tipo}" ${selecionados.includes(item.id) ? 'checked' : ''}>
+        <label for="${tipo}-${item.id}">${DM.h(item.nome)}</label>
+      </div>`).join('');
+  }
+
+  const saboresSelecionados = editando && produto ? produto.atributos.sabor : [];
+  const coberturasSelecionadas = editando && produto ? produto.atributos.cobertura : [];
+  const recheiosSelecionados = editando && produto ? produto.atributos.recheio : [];
+
+  await Promise.all([
+    montarGrade('sabor', 'campo-sabores', 'grade-sabores', saboresSelecionados),
+    montarGrade('cobertura', 'campo-coberturas', 'grade-coberturas', coberturasSelecionadas),
+    montarGrade('recheio', 'campo-recheios', 'grade-recheios', recheiosSelecionados),
+  ]);
+
+  function mostrarErro(msg) {
+    const el = document.getElementById('alerta-erro');
+    el.textContent = msg;
+    el.style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  document.getElementById('form-produto').addEventListener('submit', async function (evento) {
+    evento.preventDefault();
+
+    const nome = document.getElementById('nome').value.trim();
+    const precoTexto = document.getElementById('preco').value.trim().replace(',', '.');
+    const categoriaIdSelecionada = document.getElementById('categoria_id').value;
+    const descricao = document.getElementById('descricao').value.trim();
+    const disponivel = document.getElementById('disponivel').checked ? 1 : 0;
+
+    if (!nome) { mostrarErro('Dê um nome para o produto.'); return; }
+    if (isNaN(parseFloat(precoTexto)) || parseFloat(precoTexto) < 0) { mostrarErro('Informe um preço válido.'); return; }
+    if (!categorias.some((c) => c.id === categoriaIdSelecionada)) { mostrarErro('Escolha uma seção válida para o produto.'); return; }
+
+    let imagemFinal = imagemAtual;
+    const removerImagem = document.getElementById('remover_imagem').checked;
+    if (removerImagem && !document.getElementById('imagem').files.length) {
+      imagemFinal = null;
+    }
+
+    const sabores = Array.from(document.querySelectorAll('.chk-sabor:checked')).map((el) => el.value);
+    const coberturas = Array.from(document.querySelectorAll('.chk-cobertura:checked')).map((el) => el.value);
+    const recheios = Array.from(document.querySelectorAll('.chk-recheio:checked')).map((el) => el.value);
+
+    const botaoSalvar = document.getElementById('botao-salvar');
+    botaoSalvar.disabled = true;
+    botaoSalvar.textContent = 'Salvando...';
+
+    try {
+      await DM.salvarProduto({
+        id: editando ? produtoId : undefined,
+        categoria_id: categoriaIdSelecionada,
+        nome,
+        descricao,
+        preco: parseFloat(precoTexto),
+        imagem: imagemFinal,
+        disponivel,
+        atributos: { sabor: sabores, cobertura: coberturas, recheio: recheios },
+      });
+      window.location.href = 'produtos.html?msg=salvo';
+    } catch (e) {
+      mostrarErro('Não foi possível salvar: ' + e.message);
+      botaoSalvar.disabled = false;
+      botaoSalvar.textContent = editando ? 'Salvar alterações' : 'Cadastrar produto';
+    }
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <title>Produtos — Painel Delícias da Maria</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/img/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="../assets/img/favicon.png">
+</head>
+<body>
+<div class="painel">
+  <div id="painel-lateral-placeholder"></div>
+
+  <main class="painel-conteudo">
+    <div class="painel-cabecalho">
+      <div>
+        <h1>Produtos do cardápio</h1>
+        <p>Adicione, edite ou remova os itens que aparecem para os clientes.</p>
+      </div>
+      <a href="#" id="botao-novo-produto" class="btn btn-rosa" style="display:none;">+ Novo produto</a>
+    </div>
+
+    <div id="mensagem-sucesso" class="alerta alerta-sucesso" style="display:none;"></div>
+    <div id="aviso-sem-categoria" class="alerta alerta-erro" style="display:none;">
+      Você ainda não criou nenhuma seção do cardápio. Crie a primeira em
+      <a href="categorias.html" style="text-decoration:underline; font-weight:700;">Seções</a>
+      (por exemplo "Bolos" ou "Doces") antes de cadastrar produtos.
+    </div>
+
+    <div class="painel-bloco">
+      <div id="conteudo-produtos"></div>
+    </div>
+  </main>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+<script src="../assets/js/firebase-config.js"></script>
+<script src="../assets/js/store.js"></script>
+<script src="../assets/js/admin-common.js"></script>
+<script>
+(async () => {
+  await montarSidebar('produtos');
+
+  const params = new URLSearchParams(window.location.search);
+  const msg = params.get('msg');
+  if (msg === 'excluido' || msg === 'salvo') {
+    const el = document.getElementById('mensagem-sucesso');
+    el.textContent = msg === 'excluido' ? 'Produto excluído com sucesso.' : 'Produto salvo com sucesso.';
+    el.style.display = 'block';
+  }
+
+  async function renderizar() {
+    const [categorias, produtos] = await Promise.all([DM.buscarCategorias(), DM.buscarProdutos(false)]);
+
+    document.getElementById('aviso-sem-categoria').style.display = categorias.length === 0 ? 'block' : 'none';
+
+    const botaoNovo = document.getElementById('botao-novo-produto');
+    if (categorias.length > 0) {
+      botaoNovo.style.display = 'inline-flex';
+      botaoNovo.href = 'produto_form.html';
+    }
+
+    const container = document.getElementById('conteudo-produtos');
+
+    if (produtos.length === 0) {
+      container.innerHTML = `<p style="color:var(--marrom-suave);">
+        Nenhum produto cadastrado ainda.
+        ${categorias.length > 0 ? `<a href="produto_form.html" style="color:var(--rosa-forte-escuro); font-weight:700;">Cadastre o primeiro</a>.` : ''}
+      </p>`;
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="tabela-scroll">
+      <table class="tabela-admin">
+        <thead><tr><th>Foto</th><th>Nome</th><th>Seção</th><th>Preço</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${produtos.map((p) => `
+            <tr>
+              <td><img class="miniatura" src="${DM.h(DM.urlImagemProduto(p.imagem))}" alt=""></td>
+              <td>${DM.h(p.nome)}</td>
+              <td><span class="tag lilas">${DM.h(p.categoria_emoji)} ${DM.h(p.categoria_nome)}</span></td>
+              <td>${DM.h(DM.formatarPreco(p.preco))}</td>
+              <td>
+                <button type="button" class="badge botao-alternar ${p.disponivel ? 'badge-disponivel' : 'badge-indisponivel'}" data-id="${p.id}" style="border:none; cursor:pointer;">
+                  ${p.disponivel ? 'Disponível' : 'Oculto'}
+                </button>
+              </td>
+              <td class="acoes">
+                <a href="produto_form.html?id=${p.id}" class="icone-btn" title="Editar">✏️</a>
+                <button type="button" class="icone-btn botao-excluir" data-id="${p.id}" data-nome="${DM.h(p.nome)}" title="Excluir">🗑️</button>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>`;
+
+    document.querySelectorAll('.botao-alternar').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        await DM.alternarDisponibilidade(btn.dataset.id);
+        renderizar();
+      });
+    });
+
+    document.querySelectorAll('.botao-excluir').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        if (!confirm(`Tem certeza que deseja excluir "${btn.dataset.nome}"? Essa ação não pode ser desfeita.`)) return;
+        await DM.excluirProduto(btn.dataset.id);
+        renderizar();
+      });
+    });
+  }
+
+  renderizar();
+})();
+</script>
+</body>
+</html>

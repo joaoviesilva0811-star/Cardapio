@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <title>Delícias da Maria — Cardápio</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Cardápio online de bolos da Delícias da Maria. Escolha o sabor, cobertura e recheio, e peça diretamente pelo WhatsApp.">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/img/favicon.png">
+</head>
+<body>
+
+  <header class="topo">
+    <div class="container topo-conteudo">
+      <img src="assets/img/logo.jpg" alt="Delícias da Maria" class="logo-topo">
+      <span class="topo-selo">Feito à mão, com carinho</span>
+      <h1>Bolos, doces <em>e muito mais</em></h1>
+      <p>Escolha o seu, monte o sabor do jeitinho que gosta e peça direto pelo WhatsApp.</p>
+      <div class="topo-acoes">
+        <a href="#cardapio" class="btn btn-rosa">Ver cardápio</a>
+        <a href="https://wa.me/5512982037844" class="btn btn-fantasma" target="_blank" rel="noopener">Falar no WhatsApp</a>
+      </div>
+    </div>
+    <svg class="divisor-glace" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0,0 C50,40 100,40 150,0 C200,40 250,40 300,0 C350,40 400,40 450,0 C500,40 550,40 600,0 C650,40 700,40 750,0 C800,40 850,40 900,0 C950,40 1000,40 1050,0 C1100,40 1150,40 1200,0 L1200,40 L0,40 Z"></path>
+    </svg>
+  </header>
+
+  <main>
+    <section class="secao" id="cardapio">
+      <div class="container">
+        <div class="secao-titulo">
+          <span class="eyebrow">Cardápio</span>
+          <h2>Nosso cardápio</h2>
+          <p>Todos os itens podem ser personalizados com o sabor, cobertura e recheio disponíveis.</p>
+        </div>
+
+        <div id="filtro-barra-container"></div>
+
+        <div class="grade-bolos" id="grade-produtos"></div>
+
+        <div class="estado-vazio" id="estado-vazio-geral" style="display:none;">
+          <p>O cardápio ainda está sendo preparado. Volte em breve! 🍰</p>
+        </div>
+
+        <p id="sem-resultado" class="estado-vazio" style="display:none;">Nenhum item encontrado.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal de escolha do pedido -->
+  <div class="modal-fundo" id="modal-pedido">
+    <div class="modal-caixa">
+      <button type="button" class="modal-fechar" id="fechar-modal" aria-label="Fechar">✕</button>
+      <h3 id="modal-nome-produto">Item</h3>
+      <span class="preco" id="modal-preco"></span>
+
+      <form id="form-pedido">
+        <div class="grupo-escolha" id="grupo-sabor" hidden>
+          <label class="rotulo">Escolha o sabor</label>
+          <div class="pill-opcoes" id="opcoes-sabor"></div>
+        </div>
+        <div class="grupo-escolha" id="grupo-cobertura" hidden>
+          <label class="rotulo">Escolha a cobertura</label>
+          <div class="pill-opcoes" id="opcoes-cobertura"></div>
+        </div>
+        <div class="grupo-escolha" id="grupo-recheio" hidden>
+          <label class="rotulo">Escolha o recheio</label>
+          <div class="pill-opcoes" id="opcoes-recheio"></div>
+        </div>
+
+        <button type="submit" class="btn btn-whatsapp" style="width:100%; margin-top:8px;">
+          Enviar pedido pelo WhatsApp
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <footer class="rodape">
+    <div class="container">
+      <p>Delícias da Maria — feito com amor 💗</p>
+      <p><a href="https://wa.me/5512982037844" target="_blank" rel="noopener">Chamar no WhatsApp</a></p>
+      <a href="login.html" class="rodape-admin-link">Área administrativa</a>
+    </div>
+  </footer>
+
+  <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+  <script src="assets/js/firebase-config.js"></script>
+  <script src="assets/js/store.js"></script>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

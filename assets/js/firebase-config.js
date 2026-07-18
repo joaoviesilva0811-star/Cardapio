@@ -15,13 +15,24 @@
 //    FIRESTORE_RULES.txt (incluído neste zip) e publique.
 // ============================================================
 
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyCTgSQwT-EBEWcJu4mcRnBspTEL_QJGyPg",
   authDomain: "deliciasdemaria-b4ea9.firebaseapp.com",
   projectId: "deliciasdemaria-b4ea9",
   storageBucket: "deliciasdemaria-b4ea9.firebasestorage.app",
   messagingSenderId: "974061383706",
-  appId: "1:974061383706:web:fe3964cb34710c249861a3"
+  appId: "1:974061383706:web:22a3cd5f795623ed9861a3",
+  measurementId: "G-E6JP2B6R5M"
 };
 
-firebase.initializeApp(firebaseConfig);
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);

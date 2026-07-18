@@ -16,12 +16,12 @@
 // ============================================================
 
 const firebaseConfig = {
-  apiKey: "COLE_AQUI_SUA_API_KEY",
-  authDomain: "SEU-PROJETO.firebaseapp.com",
-  projectId: "SEU-PROJETO",
-  storageBucket: "SEU-PROJETO.appspot.com",
-  messagingSenderId: "000000000000",
-  appId: "1:000000000000:web:xxxxxxxxxxxxxxxxxxxxxx"
+  apiKey: "AIzaSyCTgSQwT-EBEWcJu4mcRnBspTEL_QJGyPg",
+  authDomain: "deliciasdemaria-b4ea9.firebaseapp.com",
+  projectId: "deliciasdemaria-b4ea9",
+  storageBucket: "deliciasdemaria-b4ea9.firebasestorage.app",
+  messagingSenderId: "974061383706",
+  appId: "1:974061383706:web:fe3964cb34710c249861a3"
 };
 
 firebase.initializeApp(firebaseConfig);
